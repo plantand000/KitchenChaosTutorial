@@ -7,64 +7,42 @@ namespace AP
     public class PlayerLocomotion : MonoBehaviour
     {
         [SerializeField]
+        private InputHandler inputHandler;
+
+        [SerializeField]
         private float movementSpeed = 5;
         [SerializeField]
         private float rotationSpeed = 10;
 
-        private void Start()
-        {
-
-        }
+        private bool isWalking;
 
         private void Update()
         {
 
-            // Legacy Input System
-            Vector2 inputVector = new Vector2(0, 0);
-            if (Input.GetKey(KeyCode.W))
-            {
-                inputVector.y = +1;
-            }
-            if (Input.GetKey(KeyCode.A))
-            {
-                inputVector.x = -1;
-            }
-            if (Input.GetKey(KeyCode.S))
-            {
-                inputVector.y = -1;
-            }
-            if (Input.GetKey(KeyCode.D))
-            {
-                inputVector.x = +1;
-            }
+            float delta = Time.deltaTime;
 
-
-            inputVector.Normalize();
-
+            Vector2 inputVector = inputHandler.GetMovementVectorNormalized();
             Vector3 moveDirection = new Vector3(inputVector.x, 0f, inputVector.y);
             transform.position += moveDirection * movementSpeed * Time.deltaTime; // Create indepedence from framerate
 
-            float rs = rotationSpeed;
-            transform.forward = Vector3.Slerp(transform.forward, moveDirection, Time.deltaTime * rs);
+            isWalking = moveDirection != Vector3.zero;
 
-            #region DepricatedRotation
-            // Make the transform to rotate the character using previous tutorial
-            //Vector3 targetDirection = Vector3.zero;
-            //targetDirection = moveDirection.normalized;
-            //targetDirection.y = 0;
-
-            //if (targetDirection == Vector3.zero)
-            //{
-            //    targetDirection = transform.forward;
-            //}
-
-            //float rs = rotationSpeed;
-            //Quaternion tr = Quaternion.LookRotation(targetDirection);
-            //Quaternion targetRotation = Quaternion.Slerp(transform.rotation, tr, rs * Time.deltaTime);
-
-            //transform.rotation = targetRotation;
-            #endregion
+            HandleRotation(moveDirection, delta);
 
         }
+
+        #region PlayerRotation
+        private void HandleRotation(Vector3 moveDir ,float delta)
+        {
+            float rs = rotationSpeed;
+            transform.forward = Vector3.Slerp(transform.forward, moveDir, delta * rs);
+        }
+        #endregion
+
+        public bool IsWalking()
+        {
+            return isWalking;
+        }
+
     }
 }
